@@ -94,6 +94,11 @@ function Index() {
     return () => clearInterval(id);
   }, []);
   const safeNow = now ?? new Date(0);
+  const yearStr = now ? format(now, "yyyy") : "";
+
+  if (!unlocked) {
+    return <LockScreen onUnlock={() => setUnlocked(true)} />;
+  }
 
   return (
     <div className="min-h-screen relative">
