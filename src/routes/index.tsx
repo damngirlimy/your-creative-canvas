@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -85,7 +85,13 @@ function Index() {
     setDialogOpen(true);
   };
 
-  const now = new Date();
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const safeNow = now ?? new Date(0);
 
   return (
     <div className="min-h-screen relative">
@@ -104,9 +110,9 @@ function Index() {
             </div>
           </div>
           <div className="flex items-center gap-3 md:gap-8 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
-            <span className="text-muted-foreground tabular-nums">{format(now, "HH:mm")}</span>
-            <span className="hidden md:inline text-muted-foreground">
-              {format(now, "EEEE, dd MMM", { locale: ptBR })}
+            <span className="text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
+            <span className="hidden md:inline text-muted-foreground" suppressHydrationWarning>
+              {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
           </div>
