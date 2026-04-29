@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -116,12 +116,28 @@ function Index() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 md:gap-8 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
+          <div className="flex items-center gap-3 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
             <span className="text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
             <span className="hidden md:inline text-muted-foreground" suppressHydrationWarning>
               {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
+            <button
+              onClick={() => {
+                try {
+                  localStorage.removeItem("schedule.unlocked.v1");
+                } catch {
+                  /* ignore */
+                }
+                setUnlocked(false);
+              }}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border hairline hover:bg-accent hover:text-accent-foreground transition-smooth"
+              aria-label="Sair"
+              title="Sair e bloquear o acesso neste dispositivo"
+            >
+              <LogOut className="h-3 w-3" />
+              <span className="hidden sm:inline">Sair</span>
+            </button>
           </div>
         </div>
       </header>
