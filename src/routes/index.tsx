@@ -279,7 +279,7 @@ function Index() {
         <div className="max-w-[1480px] mx-auto px-4 sm:px-6 md:px-12 py-8 md:py-10 grid md:grid-cols-3 gap-4 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
           <span>© {format(safeNow, "yyyy")} — Édit Schedule</span>
           <span className="md:text-center">Salvo localmente · Sempre seu</span>
-          <span className="md:text-right text-accent">{(now ? format(now, "HH:mm:ss") : "--:--:--")}</span>
+          <span className="md:text-right text-accent" suppressHydrationWarning>{now ? format(now, "HH:mm:ss") : "--:--:--"}</span>
         </div>
       </footer>
 
@@ -295,7 +295,7 @@ function Index() {
           transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="pointer-events-auto group flex items-center gap-3 sm:gap-4 bg-accent text-accent-foreground pl-5 pr-6 sm:pl-7 sm:pr-9 py-3.5 sm:py-4 shadow-lift animate-fab-pulse hover:glow-accent transition-smooth"
+          className="pointer-events-auto group flex items-center gap-3 sm:gap-4 bg-accent text-accent-foreground pl-5 pr-6 sm:pl-7 sm:pr-9 py-3.5 sm:py-4 shadow-lift hover:glow-accent transition-smooth"
           aria-label="Adicionar tarefa"
         >
           <span className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center bg-accent-foreground/10 group-hover:rotate-90 transition-smooth">
