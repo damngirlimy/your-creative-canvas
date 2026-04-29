@@ -10,6 +10,7 @@ import { TaskList } from "@/components/TaskList";
 import { TaskDialog } from "@/components/TaskDialog";
 import { Calendar } from "@/components/Calendar";
 import { EventsPanel } from "@/components/EventsPanel";
+import { LockScreen } from "@/components/LockScreen";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [unlocked, setUnlocked] = useState(false);
   const [tasks, setTasks] = useLocalStorage<Task[]>("schedule.tasks.v2", []);
   const [events, setEvents] = useLocalStorage<MonthEvent[]>("schedule.events.v2", []);
   const [categories, setCategories] = useLocalStorage<CategoryDef[]>(
