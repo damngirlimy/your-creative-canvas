@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -85,7 +85,13 @@ function Index() {
     setDialogOpen(true);
   };
 
-  const now = new Date();
+  const [now, setNow] = useState<Date | null>(null);
+  useEffect(() => {
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const safeNow = now ?? new Date(0);
 
   return (
     <div className="min-h-screen relative">
@@ -99,14 +105,14 @@ function Index() {
             <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] truncate">Édit ⁄ Schedule</p>
               <p className="font-mono text-[9px] text-muted-foreground tracking-widest truncate">
-                EST. {format(now, "yyyy")} · PERSONAL EDITION
+                EST. {format(safeNow, "yyyy")} · PERSONAL EDITION
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3 md:gap-8 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
-            <span className="text-muted-foreground tabular-nums">{format(now, "HH:mm")}</span>
-            <span className="hidden md:inline text-muted-foreground">
-              {format(now, "EEEE, dd MMM", { locale: ptBR })}
+            <span className="text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
+            <span className="hidden md:inline text-muted-foreground" suppressHydrationWarning>
+              {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
           </div>
@@ -126,7 +132,7 @@ function Index() {
               <span className="text-accent">◆</span>
               <span>Salvo localmente</span>
               <span className="text-accent">◆</span>
-              <span>Edição {format(now, "yyyy")}</span>
+              <span>Edição {format(safeNow, "yyyy")}</span>
               <span className="text-accent">◆</span>
             </span>
           ))}
@@ -138,7 +144,7 @@ function Index() {
         <div className="grid md:grid-cols-12 gap-8 md:items-end">
           <div className="md:col-span-8 relative">
             <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-accent mb-6 md:mb-8">
-              № 001 — A Curated Day · Vol. {format(now, "MM")}
+              № 001 — A Curated Day · Vol. {format(safeNow, "MM")}
             </p>
             <h1 className="font-serif text-[clamp(2.75rem,11vw,11rem)] leading-[0.88] tracking-[-0.04em] text-balance">
               <span className="block">Seu dia,</span>
@@ -271,9 +277,9 @@ function Index() {
       {/* Footer */}
       <footer className="border-t hairline">
         <div className="max-w-[1480px] mx-auto px-4 sm:px-6 md:px-12 py-8 md:py-10 grid md:grid-cols-3 gap-4 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-          <span>© {format(now, "yyyy")} — Édit Schedule</span>
+          <span>© {format(safeNow, "yyyy")} — Édit Schedule</span>
           <span className="md:text-center">Salvo localmente · Sempre seu</span>
-          <span className="md:text-right text-accent">{format(now, "HH:mm:ss")}</span>
+          <span className="md:text-right text-accent" suppressHydrationWarning>{now ? format(now, "HH:mm:ss") : "--:--:--"}</span>
         </div>
       </footer>
 
@@ -289,7 +295,7 @@ function Index() {
           transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
-          className="pointer-events-auto group flex items-center gap-3 sm:gap-4 bg-accent text-accent-foreground pl-5 pr-6 sm:pl-7 sm:pr-9 py-3.5 sm:py-4 shadow-lift animate-fab-pulse hover:glow-accent transition-smooth"
+          className="pointer-events-auto group flex items-center gap-3 sm:gap-4 bg-accent text-accent-foreground pl-5 pr-6 sm:pl-7 sm:pr-9 py-3.5 sm:py-4 shadow-lift hover:glow-accent transition-smooth"
           aria-label="Adicionar tarefa"
         >
           <span className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center bg-accent-foreground/10 group-hover:rotate-90 transition-smooth">
