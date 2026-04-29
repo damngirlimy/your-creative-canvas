@@ -10,6 +10,7 @@ import { TaskList } from "@/components/TaskList";
 import { TaskDialog } from "@/components/TaskDialog";
 import { Calendar } from "@/components/Calendar";
 import { EventsPanel } from "@/components/EventsPanel";
+import { LockScreen } from "@/components/LockScreen";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const [unlocked, setUnlocked] = useState(false);
   const [tasks, setTasks] = useLocalStorage<Task[]>("schedule.tasks.v2", []);
   const [events, setEvents] = useLocalStorage<MonthEvent[]>("schedule.events.v2", []);
   const [categories, setCategories] = useLocalStorage<CategoryDef[]>(
@@ -92,6 +94,11 @@ function Index() {
     return () => clearInterval(id);
   }, []);
   const safeNow = now ?? new Date(0);
+  const yearStr = now ? format(now, "yyyy") : "";
+
+  if (!unlocked) {
+    return <LockScreen onUnlock={() => setUnlocked(true)} />;
+  }
 
   return (
     <div className="min-h-screen relative">
@@ -105,7 +112,7 @@ function Index() {
             <div className="min-w-0">
               <p className="font-mono text-[10px] uppercase tracking-[0.3em] truncate">Édit ⁄ Schedule</p>
               <p className="font-mono text-[9px] text-muted-foreground tracking-widest truncate">
-                EST. {format(safeNow, "yyyy")} · PERSONAL EDITION
+                EST. <span suppressHydrationWarning>{yearStr}</span> · PERSONAL EDITION
               </p>
             </div>
           </div>
@@ -132,7 +139,7 @@ function Index() {
               <span className="text-accent">◆</span>
               <span>Salvo localmente</span>
               <span className="text-accent">◆</span>
-              <span>Edição {format(safeNow, "yyyy")}</span>
+              <span>Edição <span suppressHydrationWarning>{yearStr}</span></span>
               <span className="text-accent">◆</span>
             </span>
           ))}
@@ -144,7 +151,7 @@ function Index() {
         <div className="grid md:grid-cols-12 gap-8 md:items-end">
           <div className="md:col-span-8 relative">
             <p className="font-mono text-[10px] uppercase tracking-[0.4em] text-accent mb-6 md:mb-8">
-              № 001 — A Curated Day · Vol. {format(safeNow, "MM")}
+              № 001 — A Curated Day · Vol. <span suppressHydrationWarning>{now ? format(now, "MM") : ""}</span>
             </p>
             <h1 className="font-serif text-[clamp(2.75rem,11vw,11rem)] leading-[0.88] tracking-[-0.04em] text-balance">
               <span className="block">Seu dia,</span>
@@ -277,7 +284,7 @@ function Index() {
       {/* Footer */}
       <footer className="border-t hairline">
         <div className="max-w-[1480px] mx-auto px-4 sm:px-6 md:px-12 py-8 md:py-10 grid md:grid-cols-3 gap-4 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-          <span>© {format(safeNow, "yyyy")} — Édit Schedule</span>
+          <span>© <span suppressHydrationWarning>{yearStr}</span> — Édit Schedule</span>
           <span className="md:text-center">Salvo localmente · Sempre seu</span>
           <span className="md:text-right text-accent" suppressHydrationWarning>{now ? format(now, "HH:mm:ss") : "--:--:--"}</span>
         </div>
