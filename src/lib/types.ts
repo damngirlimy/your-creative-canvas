@@ -21,6 +21,8 @@ export interface Task {
   time?: string; // HH:mm
   endTime?: string; // HH:mm optional end
   completed: boolean;
+  /** Para tarefas recorrentes: datas (yyyy-MM-dd) em que foi concluída. */
+  completedDates?: string[];
   recurring?: "none" | "daily" | "weekly";
   createdAt: number;
 }

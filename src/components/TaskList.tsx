@@ -8,21 +8,30 @@ interface Props {
   tasks: Task[];
   selectedDate: Date;
   categories: CategoryDef[];
-  onToggle: (id: string) => void;
+  onToggle: (id: string, dateKey: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
 }
 
+const isDoneOn = (t: Task, dateKey: string) => {
+  if (t.recurring && t.recurring !== "none") {
+    return (t.completedDates ?? []).includes(dateKey);
+  }
+  return !!t.completed;
+};
+
 export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, onDelete }: Props) => {
   const catMap = new Map(categories.map((c) => [c.id, c]));
+  const dateKey = format(selectedDate, "yyyy-MM-dd");
   const dayTasks = tasks
     .filter((t) => {
       if (t.recurring === "daily") return true;
       if (t.recurring === "weekly") return parseISO(t.date).getDay() === selectedDate.getDay();
       return isSameDay(parseISO(t.date), selectedDate);
     })
+    .map((t) => ({ ...t, _doneToday: isDoneOn(t, dateKey) }))
     .sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a._doneToday !== b._doneToday) return a._doneToday ? 1 : -1;
       const at = a.time ?? "99:99";
       const bt = b.time ?? "99:99";
       return at.localeCompare(bt);
@@ -67,16 +76,16 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <button
-                    onClick={() => onToggle(task.id)}
+                    onClick={() => onToggle(task.id, dateKey)}
                     className={cn(
                       "h-6 w-6 shrink-0 border-2 flex items-center justify-center transition-smooth",
-                      task.completed
+                      task._doneToday
                         ? "bg-accent border-accent shadow-accent"
                         : "border-foreground/30 hover:border-accent"
                     )}
                     aria-label="Concluir"
                   >
-                    {task.completed && <Check className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={3} />}
+                    {task._doneToday && <Check className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={3} />}
                   </button>
                 </div>
 
@@ -84,7 +93,7 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                 <div className="hidden md:block font-mono tabular-nums">
                   {task.time ? (
                     <>
-                      <div className={cn("text-xl font-medium leading-none", task.completed && "text-muted-foreground line-through")}>
+                      <div className={cn("text-xl font-medium leading-none", task._doneToday && "text-muted-foreground line-through")}>
                         {task.time}
                       </div>
                       {task.endTime && (
@@ -121,7 +130,7 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                   <h3
                     className={cn(
                       "font-serif text-xl md:text-3xl mt-1 leading-tight tracking-tight transition-smooth break-words",
-                      task.completed && "line-through text-muted-foreground"
+                      task._doneToday && "line-through text-muted-foreground"
                     )}
                   >
                     {task.title}

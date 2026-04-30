@@ -47,12 +47,17 @@ function Index() {
   );
 
   const todayStats = useMemo(() => {
+    const dateKey = format(selectedDate, "yyyy-MM-dd");
     const dayTasks = tasks.filter((t) => {
       if (t.recurring === "daily") return true;
       if (t.recurring === "weekly") return parseISO(t.date).getDay() === selectedDate.getDay();
       return isSameDay(parseISO(t.date), selectedDate);
     });
-    const done = dayTasks.filter((t) => t.completed).length;
+    const isDone = (t: Task) =>
+      t.recurring && t.recurring !== "none"
+        ? (t.completedDates ?? []).includes(dateKey)
+        : t.completed;
+    const done = dayTasks.filter(isDone).length;
     return {
       total: dayTasks.length,
       done,
@@ -68,8 +73,20 @@ function Index() {
     setEditing(null);
   };
 
-  const toggle = (id: string) =>
-    setTasks((prev) => prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+  const toggle = (id: string, dateKey: string) =>
+    setTasks((prev) =>
+      prev.map((t) => {
+        if (t.id !== id) return t;
+        if (t.recurring && t.recurring !== "none") {
+          const list = t.completedDates ?? [];
+          const next = list.includes(dateKey)
+            ? list.filter((d) => d !== dateKey)
+            : [...list, dateKey];
+          return { ...t, completedDates: next };
+        }
+        return { ...t, completed: !t.completed };
+      })
+    );
   const remove = (id: string) => setTasks((prev) => prev.filter((t) => t.id !== id));
   const edit = (t: Task) => {
     setEditing(t);
