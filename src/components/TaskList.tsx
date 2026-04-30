@@ -130,7 +130,7 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                   <h3
                     className={cn(
                       "font-serif text-xl md:text-3xl mt-1 leading-tight tracking-tight transition-smooth break-words",
-                      task.completed && "line-through text-muted-foreground"
+                      task._doneToday && "line-through text-muted-foreground"
                     )}
                   >
                     {task.title}
