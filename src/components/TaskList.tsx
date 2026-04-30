@@ -22,14 +22,16 @@ const isDoneOn = (t: Task, dateKey: string) => {
 
 export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, onDelete }: Props) => {
   const catMap = new Map(categories.map((c) => [c.id, c]));
+  const dateKey = format(selectedDate, "yyyy-MM-dd");
   const dayTasks = tasks
     .filter((t) => {
       if (t.recurring === "daily") return true;
       if (t.recurring === "weekly") return parseISO(t.date).getDay() === selectedDate.getDay();
       return isSameDay(parseISO(t.date), selectedDate);
     })
+    .map((t) => ({ ...t, _doneToday: isDoneOn(t, dateKey) }))
     .sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      if (a._doneToday !== b._doneToday) return a._doneToday ? 1 : -1;
       const at = a.time ?? "99:99";
       const bt = b.time ?? "99:99";
       return at.localeCompare(bt);
