@@ -76,16 +76,16 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <button
-                    onClick={() => onToggle(task.id)}
+                    onClick={() => onToggle(task.id, dateKey)}
                     className={cn(
                       "h-6 w-6 shrink-0 border-2 flex items-center justify-center transition-smooth",
-                      task.completed
+                      task._doneToday
                         ? "bg-accent border-accent shadow-accent"
                         : "border-foreground/30 hover:border-accent"
                     )}
                     aria-label="Concluir"
                   >
-                    {task.completed && <Check className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={3} />}
+                    {task._doneToday && <Check className="h-3.5 w-3.5 text-accent-foreground" strokeWidth={3} />}
                   </button>
                 </div>
 
