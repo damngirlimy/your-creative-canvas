@@ -93,7 +93,7 @@ export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, on
                 <div className="hidden md:block font-mono tabular-nums">
                   {task.time ? (
                     <>
-                      <div className={cn("text-xl font-medium leading-none", task.completed && "text-muted-foreground line-through")}>
+                      <div className={cn("text-xl font-medium leading-none", task._doneToday && "text-muted-foreground line-through")}>
                         {task.time}
                       </div>
                       {task.endTime && (
