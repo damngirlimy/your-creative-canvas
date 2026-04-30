@@ -8,10 +8,17 @@ interface Props {
   tasks: Task[];
   selectedDate: Date;
   categories: CategoryDef[];
-  onToggle: (id: string) => void;
+  onToggle: (id: string, dateKey: string) => void;
   onEdit: (task: Task) => void;
   onDelete: (id: string) => void;
 }
+
+const isDoneOn = (t: Task, dateKey: string) => {
+  if (t.recurring && t.recurring !== "none") {
+    return (t.completedDates ?? []).includes(dateKey);
+  }
+  return !!t.completed;
+};
 
 export const TaskList = ({ tasks, selectedDate, categories, onToggle, onEdit, onDelete }: Props) => {
   const catMap = new Map(categories.map((c) => [c.id, c]));
