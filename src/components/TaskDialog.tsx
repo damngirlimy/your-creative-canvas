@@ -15,6 +15,7 @@ interface Props {
   categories: CategoryDef[];
   onAddCategory: (c: CategoryDef) => void;
   onDeleteCategory: (id: string) => void;
+  prefill?: { time?: string; endTime?: string; date?: string } | null;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -22,7 +23,7 @@ const MINUTES = [0, 15, 30, 45];
 
 export const TaskDialog = ({
   open, onClose, onSave, defaultDate, editing,
-  categories, onAddCategory, onDeleteCategory,
+  categories, onAddCategory, onDeleteCategory, prefill,
 }: Props) => {
   const [title, setTitle] = useState("");
   const [notes, setNotes] = useState("");
@@ -66,13 +67,23 @@ export const TaskDialog = ({
       setNotes("");
       setCategory(categories[0]?.id ?? "work");
       setPriority("med");
-      setDate(format(defaultDate, "yyyy-MM-dd"));
-      setHour(null); setMinute(0);
-      setEndHour(null); setEndMinute(0);
+      setDate(prefill?.date ?? format(defaultDate, "yyyy-MM-dd"));
+      if (prefill?.time) {
+        const [h, m] = prefill.time.split(":").map(Number);
+        setHour(h); setMinute(m);
+      } else {
+        setHour(null); setMinute(0);
+      }
+      if (prefill?.endTime) {
+        const [h, m] = prefill.endTime.split(":").map(Number);
+        setEndHour(h); setEndMinute(m);
+      } else {
+        setEndHour(null); setEndMinute(0);
+      }
       setRecurring("none");
     }
     setShowCatCreator(false);
-  }, [editing, defaultDate, open, categories]);
+  }, [editing, defaultDate, open, categories, prefill]);
 
   // Auto-scroll hour rail to selected
   useEffect(() => {
