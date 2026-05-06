@@ -242,7 +242,7 @@ function Index() {
             </div>
 
             <button
-              onClick={openNew}
+              onClick={() => openNew()}
               className="w-full group flex items-center justify-between px-6 py-5 bg-accent text-accent-foreground hover:glow-accent transition-smooth"
             >
               <span className="font-mono text-xs uppercase tracking-[0.25em]">Adicionar tarefa</span>
@@ -345,35 +345,18 @@ function Index() {
         </div>
       </footer>
 
-      {/*
-        Floating "Adicionar tarefa" — SEMPRE visível, centralizado horizontalmente,
-        ancorado na parte inferior da tela. Funciona bem em celular e desktop.
-      */}
-      <div className="fixed inset-x-0 bottom-5 sm:bottom-8 z-40 flex justify-center pointer-events-none px-4">
-        <motion.button
-          onClick={openNew}
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="pointer-events-auto group flex items-center gap-3 sm:gap-4 bg-accent text-accent-foreground pl-5 pr-6 sm:pl-7 sm:pr-9 py-3.5 sm:py-4 shadow-lift hover:glow-accent transition-smooth"
-          aria-label="Adicionar tarefa"
-        >
-          <span className="h-7 w-7 sm:h-8 sm:w-8 flex items-center justify-center bg-accent-foreground/10 group-hover:rotate-90 transition-smooth">
-            <Plus className="h-4 w-4 sm:h-5 sm:w-5" />
-          </span>
-          <span className="font-mono text-[11px] sm:text-xs uppercase tracking-[0.25em] whitespace-nowrap">
-            Adicionar tarefa
-          </span>
-        </motion.button>
-      </div>
+      <QuickCapture
+        categories={categories}
+        onCreate={handleSave}
+        onOpenFull={() => openNew()}
+      />
 
       <TaskDialog
         open={dialogOpen}
         onClose={() => {
           setDialogOpen(false);
           setEditing(null);
+          setPrefill(null);
         }}
         onSave={handleSave}
         defaultDate={selectedDate}
@@ -381,6 +364,7 @@ function Index() {
         categories={categories}
         onAddCategory={addCategory}
         onDeleteCategory={deleteCategory}
+        prefill={prefill}
       />
     </div>
   );
