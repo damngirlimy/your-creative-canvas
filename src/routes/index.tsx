@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -11,6 +11,9 @@ import { TaskDialog } from "@/components/TaskDialog";
 import { Calendar } from "@/components/Calendar";
 import { EventsPanel } from "@/components/EventsPanel";
 import { LockScreen } from "@/components/LockScreen";
+import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
+import { StatsPanel } from "@/components/StatsPanel";
+import { QuickCapture } from "@/components/QuickCapture";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
