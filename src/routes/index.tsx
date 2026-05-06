@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { LogOut } from "lucide-react";
+import { Plus, LogOut } from "lucide-react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -102,9 +102,17 @@ function Index() {
     setTasks((prev) => prev.map((t) => (t.category === id ? { ...t, category: "other" } : t)));
   };
 
-  const openNew = () => {
+  const [prefill, setPrefill] = useState<{ time?: string; endTime?: string; date?: string } | null>(null);
+  const openNew = (pf?: { time?: string; endTime?: string; date?: string }) => {
     setEditing(null);
+    setPrefill(pf ?? null);
     setDialogOpen(true);
+  };
+  const openFillSlot = (start: string, end: string) =>
+    openNew({ time: start, endTime: end, date: format(selectedDate, "yyyy-MM-dd") });
+  const rescheduleToToday = (t: Task) => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, date: today } : x)));
   };
 
   const [now, setNow] = useState<Date | null>(null);
@@ -295,6 +303,16 @@ function Index() {
             onEdit={edit}
             onDelete={remove}
           />
+          <div className="mt-12">
+            <FreeSlotsPanel
+              date={selectedDate}
+              tasks={tasks}
+              events={events}
+              onFillSlot={openFillSlot}
+              onReschedule={rescheduleToToday}
+              onDiscard={remove}
+            />
+          </div>
         </div>
 
         <aside className="lg:col-span-5 xl:col-span-4 space-y-14">
@@ -314,6 +332,7 @@ function Index() {
             onAdd={(e) => setEvents((prev) => [...prev, e])}
             onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
           />
+          <StatsPanel tasks={tasks} categories={categories} />
         </aside>
       </section>
 
