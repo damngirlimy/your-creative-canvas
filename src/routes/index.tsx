@@ -105,18 +105,21 @@ function Index() {
     setTasks((prev) => prev.map((t) => (t.category === id ? { ...t, category: "other" } : t)));
   };
 
-  const [prefill, setPrefill] = useState<{ time?: string; endTime?: string; date?: string } | null>(null);
-  const openNew = (pf?: { time?: string; endTime?: string; date?: string }) => {
+  const [prefill, setPrefill] = useState<{ time?: string; endTime?: string; date?: string; category?: string } | null>(null);
+  const openNew = (pf?: { time?: string; endTime?: string; date?: string; category?: string }) => {
     setEditing(null);
     setPrefill(pf ?? null);
     setDialogOpen(true);
   };
-  const openFillSlot = (start: string, end: string) =>
-    openNew({ time: start, endTime: end, date: format(selectedDate, "yyyy-MM-dd") });
-  const rescheduleToToday = (t: Task) => {
-    const today = format(new Date(), "yyyy-MM-dd");
-    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, date: today } : x)));
+  const openFillSlot = (start: string, end: string, suggestedCategory?: string) =>
+    openNew({ time: start, endTime: end, date: format(selectedDate, "yyyy-MM-dd"), category: suggestedCategory });
+  const rescheduleTo = (t: Task, newDate: string) => {
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, date: newDate } : x)));
   };
+
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickMode, setQuickMode] = useState<"single" | "paste">("single");
+  const upcomingList = useReminders(tasks, events);
 
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
