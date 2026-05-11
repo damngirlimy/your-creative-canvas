@@ -14,6 +14,9 @@ import { LockScreen } from "@/components/LockScreen";
 import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
 import { StatsPanel } from "@/components/StatsPanel";
 import { QuickCapture } from "@/components/QuickCapture";
+import { FloatingAccess } from "@/components/FloatingAccess";
+import { ReminderBanner } from "@/components/ReminderBanner";
+import { useReminders } from "@/hooks/useReminders";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
