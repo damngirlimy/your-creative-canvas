@@ -174,7 +174,7 @@ function Index() {
             </button>
           </div>
         </div>
-      </header>
+      <ReminderBanner upcoming={upcomingList} />
 
       {/* Marquee */}
       <div className="border-b hairline overflow-hidden py-3 bg-surface-1">
@@ -314,8 +314,9 @@ function Index() {
               date={selectedDate}
               tasks={tasks}
               events={events}
+              categories={categories}
               onFillSlot={openFillSlot}
-              onReschedule={rescheduleToToday}
+              onReschedule={rescheduleTo}
               onDiscard={remove}
             />
           </div>
@@ -351,9 +352,19 @@ function Index() {
         </div>
       </footer>
 
+      <FloatingAccess
+        onQuick={() => { setQuickMode("single"); setQuickOpen(true); }}
+        onPaste={() => { setQuickMode("paste"); setQuickOpen(true); }}
+        onFull={() => openNew()}
+      />
+
       <QuickCapture
+        open={quickOpen}
+        initialMode={quickMode}
+        onClose={() => setQuickOpen(false)}
         categories={categories}
-        onCreate={handleSave}
+        onCreateTask={(t) => setTasks((prev) => [...prev, t])}
+        onCreateEvent={(e) => setEvents((prev) => [...prev, e])}
         onOpenFull={() => openNew()}
       />
 
