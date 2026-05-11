@@ -151,8 +151,10 @@ export function categoryRates(tasks: Task[], days = 30): { category: string; don
 }
 
 /** Parser leve para captura rápida.
- * Reconhece: hoje/amanhã/seg-dom/dd-mm, "às 18h", "18:30", "por 1h", "todo dia"/"diário"/"semanal", #categoria.
+ * Reconhece: hoje/amanhã/seg-dom/dd-mm, "às 18h", "18:30", "por 1h", "todo dia"/"diário"/"semanal",
+ * #categoria, "categoria X", "evento:" e prioridade ("urgente", "alta/média/baixa prioridade").
  */
+export type Priority = "low" | "med" | "high";
 export interface ParsedQuick {
   title: string;
   date: string;
@@ -160,7 +162,11 @@ export interface ParsedQuick {
   endTime?: string;
   recurring: "none" | "daily" | "weekly";
   categoryHint?: string;
+  kind: "task" | "event";
+  priority?: Priority;
 }
+
+interface CategoryLite { id: string; label: string; }
 
 const WEEKDAYS: Record<string, number> = {
   domingo: 0, dom: 0,
