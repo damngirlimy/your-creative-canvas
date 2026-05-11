@@ -174,6 +174,8 @@ function Index() {
             </button>
           </div>
         </div>
+      </header>
+
       <ReminderBanner upcoming={upcomingList} />
 
       {/* Marquee */}
