@@ -15,7 +15,7 @@ interface Props {
   categories: CategoryDef[];
   onAddCategory: (c: CategoryDef) => void;
   onDeleteCategory: (id: string) => void;
-  prefill?: { time?: string; endTime?: string; date?: string } | null;
+  prefill?: { time?: string; endTime?: string; date?: string; category?: string } | null;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -65,7 +65,7 @@ export const TaskDialog = ({
     } else {
       setTitle("");
       setNotes("");
-      setCategory(categories[0]?.id ?? "work");
+      setCategory(prefill?.category ?? categories[0]?.id ?? "work");
       setPriority("med");
       setDate(prefill?.date ?? format(defaultDate, "yyyy-MM-dd"));
       if (prefill?.time) {

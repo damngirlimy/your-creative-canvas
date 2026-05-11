@@ -151,8 +151,10 @@ export function categoryRates(tasks: Task[], days = 30): { category: string; don
 }
 
 /** Parser leve para captura rápida.
- * Reconhece: hoje/amanhã/seg-dom/dd-mm, "às 18h", "18:30", "por 1h", "todo dia"/"diário"/"semanal", #categoria.
+ * Reconhece: hoje/amanhã/seg-dom/dd-mm, "às 18h", "18:30", "por 1h", "todo dia"/"diário"/"semanal",
+ * #categoria, "categoria X", "evento:" e prioridade ("urgente", "alta/média/baixa prioridade").
  */
+export type Priority = "low" | "med" | "high";
 export interface ParsedQuick {
   title: string;
   date: string;
@@ -160,7 +162,11 @@ export interface ParsedQuick {
   endTime?: string;
   recurring: "none" | "daily" | "weekly";
   categoryHint?: string;
+  kind: "task" | "event";
+  priority?: Priority;
 }
+
+interface CategoryLite { id: string; label: string; }
 
 const WEEKDAYS: Record<string, number> = {
   domingo: 0, dom: 0,
@@ -172,23 +178,43 @@ const WEEKDAYS: Record<string, number> = {
   sabado: 6, sábado: 6, sab: 6, sáb: 6,
 };
 
-export function parseQuickInput(raw: string, today = new Date()): ParsedQuick {
+export function parseQuickInput(raw: string, today = new Date(), categories: CategoryLite[] = []): ParsedQuick {
   let s = " " + raw.trim() + " ";
-  const lower = s.toLowerCase();
 
   let date = format(today, "yyyy-MM-dd");
   let time: string | undefined;
   let endTime: string | undefined;
   let recurring: "none" | "daily" | "weekly" = "none";
   let categoryHint: string | undefined;
+  let kind: "task" | "event" = "task";
+  let priority: Priority | undefined;
 
-  // recurring
+  // kind: "evento:" / "marcar evento" / "agendar evento"
+  if (/\b(evento\s*:|marcar\s+evento|agendar\s+evento|criar\s+evento)\b/i.test(s)) {
+    kind = "event";
+    s = s.replace(/\b(evento\s*:|marcar\s+evento|agendar\s+evento|criar\s+evento)\b/gi, "");
+  }
+
+  // priority
+  if (/\b(urgente|alta\s+prioridade|prioridade\s+alta)\b/i.test(s)) {
+    priority = "high";
+    s = s.replace(/\b(urgente|alta\s+prioridade|prioridade\s+alta)\b/gi, "");
+  } else if (/\b(baixa\s+prioridade|prioridade\s+baixa)\b/i.test(s)) {
+    priority = "low";
+    s = s.replace(/\b(baixa\s+prioridade|prioridade\s+baixa)\b/gi, "");
+  } else if (/\b(m[eé]dia\s+prioridade|prioridade\s+m[eé]dia)\b/i.test(s)) {
+    priority = "med";
+    s = s.replace(/\b(m[eé]dia\s+prioridade|prioridade\s+m[eé]dia)\b/gi, "");
+  }
+
+  // recurring (expanded)
   if (/\b(todo dia|todos os dias|di[aá]rio|diariamente)\b/i.test(s)) {
     recurring = "daily";
     s = s.replace(/\b(todo dia|todos os dias|di[aá]rio|diariamente)\b/gi, "");
-  } else if (/\b(toda semana|semanal|semanalmente)\b/i.test(s)) {
+  } else if (/\b(toda semana|semanal|semanalmente|toda (segunda|terça|terca|quarta|quinta|sexta|sábado|sabado|domingo))\b/i.test(s)) {
     recurring = "weekly";
     s = s.replace(/\b(toda semana|semanal|semanalmente)\b/gi, "");
+    // keep the weekday word so the date parser below can pick the day
   }
 
   // category hint #cat
@@ -198,17 +224,30 @@ export function parseQuickInput(raw: string, today = new Date()): ParsedQuick {
     s = s.replace(catMatch[0], "");
   }
 
+  // category by name: "categoria treino" or matches a known label
+  if (!categoryHint) {
+    const named = s.match(/\bcategoria\s+([\p{L}0-9_-]+)/iu);
+    if (named) {
+      categoryHint = named[1].toLowerCase();
+      s = s.replace(named[0], "");
+    } else {
+      for (const c of categories) {
+        const re = new RegExp(`\\b${c.label.toLowerCase()}\\b`, "i");
+        if (re.test(s)) { categoryHint = c.id; break; }
+      }
+    }
+  }
+
   // date keywords
-  if (/\bhoje\b/i.test(lower)) {
-    s = s.replace(/\bhoje\b/gi, "");
-  } else if (/\bamanh[aã]\b/i.test(lower)) {
-    date = format(addDays(today, 1), "yyyy-MM-dd");
-    s = s.replace(/\bamanh[aã]\b/gi, "");
-  } else if (/\bdepois de amanh[aã]\b/i.test(lower)) {
+  if (/\bdepois de amanh[aã]\b/i.test(s)) {
     date = format(addDays(today, 2), "yyyy-MM-dd");
     s = s.replace(/\bdepois de amanh[aã]\b/gi, "");
+  } else if (/\bhoje\b/i.test(s)) {
+    s = s.replace(/\bhoje\b/gi, "");
+  } else if (/\bamanh[aã]\b/i.test(s)) {
+    date = format(addDays(today, 1), "yyyy-MM-dd");
+    s = s.replace(/\bamanh[aã]\b/gi, "");
   } else {
-    // weekday
     for (const [name, dow] of Object.entries(WEEKDAYS)) {
       const re = new RegExp(`\\b${name}\\b`, "i");
       if (re.test(s)) {
@@ -220,7 +259,6 @@ export function parseQuickInput(raw: string, today = new Date()): ParsedQuick {
         break;
       }
     }
-    // dd/mm or dd-mm
     const dm = s.match(/\b(\d{1,2})[\/-](\d{1,2})(?:[\/-](\d{2,4}))?\b/);
     if (dm) {
       const dd = Number(dm[1]);
@@ -232,19 +270,16 @@ export function parseQuickInput(raw: string, today = new Date()): ParsedQuick {
     }
   }
 
-  // duration "por 1h", "por 90min", "por 1h30"
+  // duration
   const durMatch = s.match(/\bpor\s+(\d{1,2})\s*h(?:(\d{1,2}))?\b|\bpor\s+(\d{1,3})\s*min\b/i);
   let durMin: number | undefined;
   if (durMatch) {
-    if (durMatch[1]) {
-      durMin = Number(durMatch[1]) * 60 + (durMatch[2] ? Number(durMatch[2]) : 0);
-    } else if (durMatch[3]) {
-      durMin = Number(durMatch[3]);
-    }
+    if (durMatch[1]) durMin = Number(durMatch[1]) * 60 + (durMatch[2] ? Number(durMatch[2]) : 0);
+    else if (durMatch[3]) durMin = Number(durMatch[3]);
     s = s.replace(durMatch[0], "");
   }
 
-  // time: "18:30", "18h30", "18h", "às 18h"
+  // time
   const timeMatch = s.match(/\b(?:às|as|@)?\s*(\d{1,2})(?:[:h](\d{2}))?\b(?!\s*min)/i);
   if (timeMatch) {
     const h = Number(timeMatch[1]);
@@ -259,8 +294,8 @@ export function parseQuickInput(raw: string, today = new Date()): ParsedQuick {
     }
   }
 
-  const title = s.replace(/\s+/g, " ").trim() || "Tarefa";
-  return { title, date, time, endTime, recurring, categoryHint };
+  const title = s.replace(/\s+/g, " ").trim() || (kind === "event" ? "Evento" : "Tarefa");
+  return { title, date, time, endTime, recurring, categoryHint, kind, priority };
 }
 
 /** Sugere o que fazer num slot livre baseado na categoria mais "esquecida". */

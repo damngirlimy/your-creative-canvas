@@ -14,6 +14,9 @@ import { LockScreen } from "@/components/LockScreen";
 import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
 import { StatsPanel } from "@/components/StatsPanel";
 import { QuickCapture } from "@/components/QuickCapture";
+import { FloatingAccess } from "@/components/FloatingAccess";
+import { ReminderBanner } from "@/components/ReminderBanner";
+import { useReminders } from "@/hooks/useReminders";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -102,18 +105,21 @@ function Index() {
     setTasks((prev) => prev.map((t) => (t.category === id ? { ...t, category: "other" } : t)));
   };
 
-  const [prefill, setPrefill] = useState<{ time?: string; endTime?: string; date?: string } | null>(null);
-  const openNew = (pf?: { time?: string; endTime?: string; date?: string }) => {
+  const [prefill, setPrefill] = useState<{ time?: string; endTime?: string; date?: string; category?: string } | null>(null);
+  const openNew = (pf?: { time?: string; endTime?: string; date?: string; category?: string }) => {
     setEditing(null);
     setPrefill(pf ?? null);
     setDialogOpen(true);
   };
-  const openFillSlot = (start: string, end: string) =>
-    openNew({ time: start, endTime: end, date: format(selectedDate, "yyyy-MM-dd") });
-  const rescheduleToToday = (t: Task) => {
-    const today = format(new Date(), "yyyy-MM-dd");
-    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, date: today } : x)));
+  const openFillSlot = (start: string, end: string, suggestedCategory?: string) =>
+    openNew({ time: start, endTime: end, date: format(selectedDate, "yyyy-MM-dd"), category: suggestedCategory });
+  const rescheduleTo = (t: Task, newDate: string) => {
+    setTasks((prev) => prev.map((x) => (x.id === t.id ? { ...x, date: newDate } : x)));
   };
+
+  const [quickOpen, setQuickOpen] = useState(false);
+  const [quickMode, setQuickMode] = useState<"single" | "paste">("single");
+  const upcomingList = useReminders(tasks, events);
 
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -169,6 +175,8 @@ function Index() {
           </div>
         </div>
       </header>
+
+      <ReminderBanner upcoming={upcomingList} />
 
       {/* Marquee */}
       <div className="border-b hairline overflow-hidden py-3 bg-surface-1">
@@ -308,8 +316,9 @@ function Index() {
               date={selectedDate}
               tasks={tasks}
               events={events}
+              categories={categories}
               onFillSlot={openFillSlot}
-              onReschedule={rescheduleToToday}
+              onReschedule={rescheduleTo}
               onDiscard={remove}
             />
           </div>
@@ -345,9 +354,19 @@ function Index() {
         </div>
       </footer>
 
+      <FloatingAccess
+        onQuick={() => { setQuickMode("single"); setQuickOpen(true); }}
+        onPaste={() => { setQuickMode("paste"); setQuickOpen(true); }}
+        onFull={() => openNew()}
+      />
+
       <QuickCapture
+        open={quickOpen}
+        initialMode={quickMode}
+        onClose={() => setQuickOpen(false)}
         categories={categories}
-        onCreate={handleSave}
+        onCreateTask={(t) => setTasks((prev) => [...prev, t])}
+        onCreateEvent={(e) => setEvents((prev) => [...prev, e])}
         onOpenFull={() => openNew()}
       />
 
