@@ -367,6 +367,10 @@ function Index() {
         categories={categories}
         onCreateTask={(t) => setTasks((prev) => [...prev, t])}
         onCreateEvent={(e) => setEvents((prev) => [...prev, e])}
+        onUndoCreated={(taskIds, eventIds) => {
+          if (taskIds.length) setTasks((prev) => prev.filter((t) => !taskIds.includes(t.id)));
+          if (eventIds.length) setEvents((prev) => prev.filter((e) => !eventIds.includes(e.id)));
+        }}
         onOpenFull={() => openNew()}
       />
 
