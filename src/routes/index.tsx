@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Search, X } from "lucide-react";
+import { BackupTools } from "@/components/BackupTools";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -44,13 +45,18 @@ function Index() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [month, setMonth] = useState(new Date());
   const [filter, setFilter] = useState<string>("all");
+  const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
-  const filteredTasks = useMemo(
-    () => (filter === "all" ? tasks : tasks.filter((t) => t.category === filter)),
-    [tasks, filter]
-  );
+  const filteredTasks = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return tasks.filter((t) => {
+      if (filter !== "all" && t.category !== filter) return false;
+      if (q && !`${t.title} ${t.notes ?? ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [tasks, filter, query]);
 
   const todayStats = useMemo(() => {
     const dateKey = format(selectedDate, "yyyy-MM-dd");
