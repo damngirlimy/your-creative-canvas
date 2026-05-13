@@ -469,6 +469,35 @@ function Index() {
         onDeleteCategory={deleteCategory}
         prefill={prefill}
       />
+
+      <FocusMode
+        open={focusOpen}
+        onClose={() => setFocusOpen(false)}
+        tasks={tasks}
+        selectedDate={selectedDate}
+        onComplete={toggle}
+      />
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        tasks={tasks}
+        categories={categories}
+        actions={[
+          { id: "new-task", label: "Nova tarefa", group: "Ações", run: () => openNew() },
+          { id: "quick", label: "Captura rápida", group: "Ações", run: () => { setQuickMode("single"); setQuickOpen(true); } },
+          { id: "paste", label: "Colar lote", group: "Ações", run: () => { setQuickMode("paste"); setQuickOpen(true); } },
+          { id: "focus", label: "Modo foco", group: "Ações", hint: "⌘J", run: () => setFocusOpen(true) },
+        ]}
+        onJumpDate={(d) => { setSelectedDate(d); setMonth(d); }}
+        onEditTask={(t) => edit(t)}
+        onFilter={(c) => setFilter(c)}
+      />
+
+      <ShutdownRitual
+        tasks={tasks}
+        onReschedule={(id, newDate) => setTasks((prev) => prev.map((t) => t.id === id ? { ...t, date: newDate } : t))}
+      />
     </div>
   );
 }
