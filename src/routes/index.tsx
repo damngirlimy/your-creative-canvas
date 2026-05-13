@@ -3,8 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus, LogOut, Search, X } from "lucide-react";
+import { Plus, LogOut, Search, X, Timer, Command } from "lucide-react";
 import { BackupTools } from "@/components/BackupTools";
+import { FocusMode } from "@/components/FocusMode";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ShutdownRitual } from "@/components/ShutdownRitual";
+import { celebrate } from "@/lib/celebrate";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -85,20 +89,27 @@ function Index() {
     setEditing(null);
   };
 
-  const toggle = (id: string, dateKey: string) =>
+  const toggle = (id: string, dateKey: string) => {
+    let becameDone = false;
     setTasks((prev) =>
       prev.map((t) => {
         if (t.id !== id) return t;
         if (t.recurring && t.recurring !== "none") {
           const list = t.completedDates ?? [];
-          const next = list.includes(dateKey)
-            ? list.filter((d) => d !== dateKey)
-            : [...list, dateKey];
+          const has = list.includes(dateKey);
+          becameDone = !has;
+          const next = has ? list.filter((d) => d !== dateKey) : [...list, dateKey];
           return { ...t, completedDates: next };
         }
+        becameDone = !t.completed;
         return { ...t, completed: !t.completed };
       })
     );
+    if (becameDone) {
+      // Defer to next tick so React paints the check first
+      setTimeout(() => celebrate(), 0);
+    }
+  };
   const remove = (id: string) => setTasks((prev) => prev.filter((t) => t.id !== id));
   const edit = (t: Task) => {
     setEditing(t);
@@ -125,7 +136,21 @@ function Index() {
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickMode, setQuickMode] = useState<"single" | "paste">("single");
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const upcomingList = useReminders(tasks, events);
+
+  // Cmd/Ctrl+K opens command palette; Cmd+J opens focus mode
+  useEffect(() => {
+    if (!unlocked) return;
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "k") { e.preventDefault(); setPaletteOpen((v) => !v); }
+      if (meta && e.key.toLowerCase() === "j") { e.preventDefault(); setFocusOpen((v) => !v); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [unlocked]);
 
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -172,6 +197,24 @@ function Index() {
                 if (d.categories) setCategories(d.categories);
               }}
             />
+            <button
+              onClick={() => setFocusOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border hairline hover:bg-accent hover:text-accent-foreground transition-smooth"
+              aria-label="Modo foco"
+              title="Modo foco (⌘J)"
+            >
+              <Timer className="h-3 w-3" />
+              <span className="hidden sm:inline">Foco</span>
+            </button>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 border hairline hover:bg-accent hover:text-accent-foreground transition-smooth"
+              aria-label="Paleta de comandos"
+              title="Paleta de comandos (⌘K)"
+            >
+              <Command className="h-3 w-3" />
+              <span>⌘K</span>
+            </button>
             <button
               onClick={() => {
                 try {
@@ -425,6 +468,35 @@ function Index() {
         onAddCategory={addCategory}
         onDeleteCategory={deleteCategory}
         prefill={prefill}
+      />
+
+      <FocusMode
+        open={focusOpen}
+        onClose={() => setFocusOpen(false)}
+        tasks={tasks}
+        selectedDate={selectedDate}
+        onComplete={toggle}
+      />
+
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        tasks={tasks}
+        categories={categories}
+        actions={[
+          { id: "new-task", label: "Nova tarefa", group: "Ações", run: () => openNew() },
+          { id: "quick", label: "Captura rápida", group: "Ações", run: () => { setQuickMode("single"); setQuickOpen(true); } },
+          { id: "paste", label: "Colar lote", group: "Ações", run: () => { setQuickMode("paste"); setQuickOpen(true); } },
+          { id: "focus", label: "Modo foco", group: "Ações", hint: "⌘J", run: () => setFocusOpen(true) },
+        ]}
+        onJumpDate={(d) => { setSelectedDate(d); setMonth(d); }}
+        onEditTask={(t) => edit(t)}
+        onFilter={(c) => setFilter(c)}
+      />
+
+      <ShutdownRitual
+        tasks={tasks}
+        onReschedule={(id, newDate) => setTasks((prev) => prev.map((t) => t.id === id ? { ...t, date: newDate } : t))}
       />
     </div>
   );
