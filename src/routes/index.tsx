@@ -3,7 +3,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus, LogOut } from "lucide-react";
+import { Plus, LogOut, Search, X } from "lucide-react";
+import { BackupTools } from "@/components/BackupTools";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -44,13 +45,18 @@ function Index() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [month, setMonth] = useState(new Date());
   const [filter, setFilter] = useState<string>("all");
+  const [query, setQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Task | null>(null);
 
-  const filteredTasks = useMemo(
-    () => (filter === "all" ? tasks : tasks.filter((t) => t.category === filter)),
-    [tasks, filter]
-  );
+  const filteredTasks = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return tasks.filter((t) => {
+      if (filter !== "all" && t.category !== filter) return false;
+      if (q && !`${t.title} ${t.notes ?? ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [tasks, filter, query]);
 
   const todayStats = useMemo(() => {
     const dateKey = format(selectedDate, "yyyy-MM-dd");
@@ -156,6 +162,16 @@ function Index() {
               {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
             <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
+            <BackupTools
+              tasks={tasks}
+              events={events}
+              categories={categories}
+              onImport={(d) => {
+                if (d.tasks) setTasks(d.tasks);
+                if (d.events) setEvents(d.events);
+                if (d.categories) setCategories(d.categories);
+              }}
+            />
             <button
               onClick={() => {
                 try {
@@ -275,6 +291,27 @@ function Index() {
                 {format(selectedDate, "dd 'de' MMMM, yyyy", { locale: ptBR })}
               </p>
             </div>
+          </div>
+
+          {/* Search */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Buscar tarefas…"
+              className="w-full bg-surface-1 border hairline pl-9 pr-9 py-2.5 font-mono text-xs focus:outline-none focus:border-accent transition-smooth"
+            />
+            {query && (
+              <button
+                onClick={() => setQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                aria-label="Limpar busca"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
           </div>
 
           {/* Filters */}
