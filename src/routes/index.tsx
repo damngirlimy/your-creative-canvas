@@ -136,7 +136,21 @@ function Index() {
 
   const [quickOpen, setQuickOpen] = useState(false);
   const [quickMode, setQuickMode] = useState<"single" | "paste">("single");
+  const [focusOpen, setFocusOpen] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
   const upcomingList = useReminders(tasks, events);
+
+  // Cmd/Ctrl+K opens command palette; Cmd+J opens focus mode
+  useEffect(() => {
+    if (!unlocked) return;
+    const onKey = (e: KeyboardEvent) => {
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && e.key.toLowerCase() === "k") { e.preventDefault(); setPaletteOpen((v) => !v); }
+      if (meta && e.key.toLowerCase() === "j") { e.preventDefault(); setFocusOpen((v) => !v); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [unlocked]);
 
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
