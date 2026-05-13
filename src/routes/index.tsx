@@ -198,6 +198,24 @@ function Index() {
               }}
             />
             <button
+              onClick={() => setFocusOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 border hairline hover:bg-accent hover:text-accent-foreground transition-smooth"
+              aria-label="Modo foco"
+              title="Modo foco (⌘J)"
+            >
+              <Timer className="h-3 w-3" />
+              <span className="hidden sm:inline">Foco</span>
+            </button>
+            <button
+              onClick={() => setPaletteOpen(true)}
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 border hairline hover:bg-accent hover:text-accent-foreground transition-smooth"
+              aria-label="Paleta de comandos"
+              title="Paleta de comandos (⌘K)"
+            >
+              <Command className="h-3 w-3" />
+              <span>⌘K</span>
+            </button>
+            <button
               onClick={() => {
                 try {
                   localStorage.removeItem("schedule.unlocked.v1");
