@@ -3,8 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { format, isSameDay, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { motion } from "framer-motion";
-import { Plus, LogOut, Search, X } from "lucide-react";
+import { Plus, LogOut, Search, X, Timer, Command } from "lucide-react";
 import { BackupTools } from "@/components/BackupTools";
+import { FocusMode } from "@/components/FocusMode";
+import { CommandPalette } from "@/components/CommandPalette";
+import { ShutdownRitual } from "@/components/ShutdownRitual";
+import { celebrate } from "@/lib/celebrate";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
 import { Task, MonthEvent, CategoryDef, DEFAULT_CATEGORIES } from "@/lib/types";
 import { TaskList } from "@/components/TaskList";
@@ -85,20 +89,27 @@ function Index() {
     setEditing(null);
   };
 
-  const toggle = (id: string, dateKey: string) =>
+  const toggle = (id: string, dateKey: string) => {
+    let becameDone = false;
     setTasks((prev) =>
       prev.map((t) => {
         if (t.id !== id) return t;
         if (t.recurring && t.recurring !== "none") {
           const list = t.completedDates ?? [];
-          const next = list.includes(dateKey)
-            ? list.filter((d) => d !== dateKey)
-            : [...list, dateKey];
+          const has = list.includes(dateKey);
+          becameDone = !has;
+          const next = has ? list.filter((d) => d !== dateKey) : [...list, dateKey];
           return { ...t, completedDates: next };
         }
+        becameDone = !t.completed;
         return { ...t, completed: !t.completed };
       })
     );
+    if (becameDone) {
+      // Defer to next tick so React paints the check first
+      setTimeout(() => celebrate(), 0);
+    }
+  };
   const remove = (id: string) => setTasks((prev) => prev.filter((t) => t.id !== id));
   const edit = (t: Task) => {
     setEditing(t);
