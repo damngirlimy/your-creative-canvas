@@ -18,6 +18,7 @@ import { EventsPanel } from "@/components/EventsPanel";
 import { LockScreen } from "@/components/LockScreen";
 import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
 import { StatsPanel } from "@/components/StatsPanel";
+import { DailyGoal } from "@/components/DailyGoal";
 import { QuickCapture } from "@/components/QuickCapture";
 import { FloatingAccess } from "@/components/FloatingAccess";
 import { ReminderBanner } from "@/components/ReminderBanner";
@@ -405,6 +406,7 @@ function Index() {
         </div>
 
         <aside className="lg:col-span-5 xl:col-span-4 space-y-14">
+          <DailyGoal tasks={tasks} selectedDate={selectedDate} />
           <Calendar
             month={month}
             setMonth={setMonth}
