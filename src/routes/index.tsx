@@ -18,6 +18,7 @@ import { EventsPanel } from "@/components/EventsPanel";
 import { LockScreen } from "@/components/LockScreen";
 import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
 import { StatsPanel } from "@/components/StatsPanel";
+import { DailyGoal } from "@/components/DailyGoal";
 import { QuickCapture } from "@/components/QuickCapture";
 import { FloatingAccess } from "@/components/FloatingAccess";
 import { ReminderBanner } from "@/components/ReminderBanner";
