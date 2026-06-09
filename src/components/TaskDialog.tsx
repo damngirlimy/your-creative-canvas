@@ -197,7 +197,7 @@ export const TaskDialog = ({
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <form onSubmit={handleSubmit} className="p-5 sm:p-8 space-y-7 sm:space-y-8">
               {/* Title */}
               <div>
                 <input
