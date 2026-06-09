@@ -392,7 +392,15 @@ function Index() {
             onToggle={toggle}
             onEdit={edit}
             onDelete={remove}
+            onUpdate={(task) => setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)))}
+            onReorder={(orderedIds) => {
+              setTasks((prev) => {
+                const orderMap = new Map(orderedIds.map((id, i) => [id, i]));
+                return prev.map((t) => orderMap.has(t.id) ? { ...t, order: orderMap.get(t.id) } : t);
+              });
+            }}
           />
+
           <div className="mt-12">
             <FreeSlotsPanel
               date={selectedDate}
