@@ -117,10 +117,30 @@ export const TaskDialog = ({
       endTime,
       completed: editing?.completed ?? false,
       recurring,
+      tags: tags.length ? tags : undefined,
+      subtasks: subtasks.length ? subtasks : undefined,
+      order: editing?.order,
       createdAt: editing?.createdAt ?? Date.now(),
     });
     onClose();
   };
+
+  const addTag = () => {
+    const t = tagInput.trim().toLowerCase().replace(/[^\p{L}0-9_-]/gu, "");
+    if (!t || tags.includes(t)) { setTagInput(""); return; }
+    setTags((prev) => [...prev, t]);
+    setTagInput("");
+  };
+  const removeTag = (t: string) => setTags((prev) => prev.filter((x) => x !== t));
+
+  const addSub = () => {
+    const text = subInput.trim();
+    if (!text) return;
+    setSubtasks((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
+    setSubInput("");
+  };
+  const removeSub = (id: string) => setSubtasks((prev) => prev.filter((s) => s.id !== id));
+  const toggleSub = (id: string) => setSubtasks((prev) => prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
 
   const handleAddCategory = () => {
     const name = newCatName.trim();
