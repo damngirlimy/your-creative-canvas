@@ -433,6 +433,7 @@ function Index() {
             onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
           />
           <StatsPanel tasks={tasks} categories={categories} />
+          <HabitHeatmap tasks={tasks} />
         </aside>
       </section>
 
