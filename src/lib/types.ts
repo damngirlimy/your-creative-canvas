@@ -11,6 +11,12 @@ export interface CategoryDef {
   builtin?: boolean;
 }
 
+export interface Subtask {
+  id: string;
+  text: string;
+  done: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -24,6 +30,12 @@ export interface Task {
   /** Para tarefas recorrentes: datas (yyyy-MM-dd) em que foi concluída. */
   completedDates?: string[];
   recurring?: "none" | "daily" | "weekly";
+  /** Tags livres */
+  tags?: string[];
+  /** Checklist interno */
+  subtasks?: Subtask[];
+  /** Ordem manual dentro do dia */
+  order?: number;
   createdAt: number;
 }
 

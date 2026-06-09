@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Calendar as CalendarIcon, Clock, Repeat, Flag, Tag, Trash2 } from "lucide-react";
+import { X, Plus, Calendar as CalendarIcon, Clock, Repeat, Flag, Tag, Trash2, ListChecks, Hash } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CategoryDef, Priority, Task, PRIORITY_META, PALETTE_HUES } from "@/lib/types";
+import { CategoryDef, Priority, Task, Subtask, PRIORITY_META, PALETTE_HUES } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -35,6 +35,10 @@ export const TaskDialog = ({
   const [endHour, setEndHour] = useState<number | null>(null);
   const [endMinute, setEndMinute] = useState<number>(0);
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [subtasks, setSubtasks] = useState<Subtask[]>([]);
+  const [subInput, setSubInput] = useState("");
   const [showCatCreator, setShowCatCreator] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatHue, setNewCatHue] = useState(PALETTE_HUES[0]);
@@ -62,6 +66,8 @@ export const TaskDialog = ({
         setEndHour(null); setEndMinute(0);
       }
       setRecurring(editing.recurring ?? "none");
+      setTags(editing.tags ?? []);
+      setSubtasks(editing.subtasks ?? []);
     } else {
       setTitle("");
       setNotes("");
@@ -81,7 +87,10 @@ export const TaskDialog = ({
         setEndHour(null); setEndMinute(0);
       }
       setRecurring("none");
+      setTags([]);
+      setSubtasks([]);
     }
+    setTagInput(""); setSubInput("");
     setShowCatCreator(false);
   }, [editing, defaultDate, open, categories, prefill]);
 
@@ -108,10 +117,30 @@ export const TaskDialog = ({
       endTime,
       completed: editing?.completed ?? false,
       recurring,
+      tags: tags.length ? tags : undefined,
+      subtasks: subtasks.length ? subtasks : undefined,
+      order: editing?.order,
       createdAt: editing?.createdAt ?? Date.now(),
     });
     onClose();
   };
+
+  const addTag = () => {
+    const t = tagInput.trim().toLowerCase().replace(/[^\p{L}0-9_-]/gu, "");
+    if (!t || tags.includes(t)) { setTagInput(""); return; }
+    setTags((prev) => [...prev, t]);
+    setTagInput("");
+  };
+  const removeTag = (t: string) => setTags((prev) => prev.filter((x) => x !== t));
+
+  const addSub = () => {
+    const text = subInput.trim();
+    if (!text) return;
+    setSubtasks((prev) => [...prev, { id: crypto.randomUUID(), text, done: false }]);
+    setSubInput("");
+  };
+  const removeSub = (id: string) => setSubtasks((prev) => prev.filter((s) => s.id !== id));
+  const toggleSub = (id: string) => setSubtasks((prev) => prev.map((s) => (s.id === id ? { ...s, done: !s.done } : s)));
 
   const handleAddCategory = () => {
     const name = newCatName.trim();
@@ -145,7 +174,7 @@ export const TaskDialog = ({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(680px,94vw)] max-h-[92vh] overflow-y-auto bg-surface-1 border hairline shadow-lift"
           >
             {/* Header */}
-            <div className="relative border-b hairline px-8 py-6 bg-gradient-ink">
+            <div className="relative border-b hairline px-5 sm:px-8 py-5 sm:py-6 bg-gradient-ink">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
@@ -168,7 +197,7 @@ export const TaskDialog = ({
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8 space-y-8">
+            <form onSubmit={handleSubmit} className="p-5 sm:p-8 space-y-7 sm:space-y-8">
               {/* Title */}
               <div>
                 <input
@@ -433,7 +462,69 @@ export const TaskDialog = ({
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Tags */}
+              <div>
+                <Label icon={<Hash className="h-3 w-3" />}>Tags</Label>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {tags.map((t) => (
+                    <span key={t} className="font-mono text-[10px] uppercase tracking-widest px-2 py-1 bg-foreground/10 flex items-center gap-1.5">
+                      #{t}
+                      <button type="button" onClick={() => removeTag(t)} className="text-muted-foreground hover:text-destructive">
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(); }
+                      if (e.key === "Backspace" && !tagInput && tags.length) removeTag(tags[tags.length - 1]);
+                    }}
+                    placeholder="adicionar tag…"
+                    className="flex-1 min-w-[120px] bg-transparent border-b hairline pb-1 font-mono text-xs focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              {/* Subtasks */}
+              <div>
+                <Label icon={<ListChecks className="h-3 w-3" />}>Subtarefas</Label>
+                <div className="mt-2 space-y-2">
+                  {subtasks.map((s) => (
+                    <div key={s.id} className="flex items-center gap-3 group/sub">
+                      <button
+                        type="button"
+                        onClick={() => toggleSub(s.id)}
+                        className={cn(
+                          "h-4 w-4 shrink-0 border flex items-center justify-center transition-smooth",
+                          s.done ? "bg-accent border-accent" : "border-foreground/30 hover:border-accent"
+                        )}
+                      >
+                        {s.done && <span className="text-accent-foreground text-[10px] leading-none">✓</span>}
+                      </button>
+                      <span className={cn("text-sm flex-1", s.done && "line-through text-muted-foreground")}>{s.text}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSub(s.id)}
+                        className="opacity-0 group-hover/sub:opacity-100 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                    <input
+                      value={subInput}
+                      onChange={(e) => setSubInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSub(); } }}
+                      placeholder="Adicionar passo…"
+                      className="flex-1 bg-transparent border-b hairline pb-1 text-sm focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+              </div>
               <div>
                 <Label>Notas</Label>
                 <textarea
@@ -446,7 +537,7 @@ export const TaskDialog = ({
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-2 border-t hairline -mx-8 px-8 pt-6">
+              <div className="flex gap-3 border-t hairline -mx-5 sm:-mx-8 px-5 sm:px-8 pt-6">
                 <button
                   type="button"
                   onClick={onClose}

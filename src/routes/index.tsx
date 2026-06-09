@@ -18,6 +18,7 @@ import { EventsPanel } from "@/components/EventsPanel";
 import { LockScreen } from "@/components/LockScreen";
 import { FreeSlotsPanel } from "@/components/FreeSlotsPanel";
 import { StatsPanel } from "@/components/StatsPanel";
+import { HabitHeatmap } from "@/components/HabitHeatmap";
 import { DailyGoal } from "@/components/DailyGoal";
 import { QuickCapture } from "@/components/QuickCapture";
 import { FloatingAccess } from "@/components/FloatingAccess";
@@ -182,12 +183,12 @@ function Index() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
-            <span className="text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
+          <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] flex-wrap justify-end">
+            <span className="hidden xs:inline text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
             <span className="hidden md:inline text-muted-foreground" suppressHydrationWarning>
               {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
+            <span className="hidden sm:inline h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
             <BackupTools
               tasks={tasks}
               events={events}
@@ -391,7 +392,15 @@ function Index() {
             onToggle={toggle}
             onEdit={edit}
             onDelete={remove}
+            onUpdate={(task) => setTasks((prev) => prev.map((t) => (t.id === task.id ? task : t)))}
+            onReorder={(orderedIds) => {
+              setTasks((prev) => {
+                const orderMap = new Map(orderedIds.map((id, i) => [id, i]));
+                return prev.map((t) => orderMap.has(t.id) ? { ...t, order: orderMap.get(t.id) } : t);
+              });
+            }}
           />
+
           <div className="mt-12">
             <FreeSlotsPanel
               date={selectedDate}
@@ -424,6 +433,7 @@ function Index() {
             onDelete={(id) => setEvents((prev) => prev.filter((e) => e.id !== id))}
           />
           <StatsPanel tasks={tasks} categories={categories} />
+          <HabitHeatmap tasks={tasks} />
         </aside>
       </section>
 
