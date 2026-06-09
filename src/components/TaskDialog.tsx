@@ -537,7 +537,7 @@ export const TaskDialog = ({
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-2 border-t hairline -mx-8 px-8 pt-6">
+              <div className="flex gap-3 border-t hairline -mx-5 sm:-mx-8 px-5 sm:px-8 pt-6">
                 <button
                   type="button"
                   onClick={onClose}
