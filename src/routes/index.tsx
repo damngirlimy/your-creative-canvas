@@ -183,12 +183,12 @@ function Index() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] shrink-0">
-            <span className="text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
+          <div className="flex items-center gap-1.5 sm:gap-3 md:gap-6 font-mono text-[10px] uppercase tracking-[0.25em] flex-wrap justify-end">
+            <span className="hidden xs:inline text-muted-foreground tabular-nums" suppressHydrationWarning>{now ? format(now, "HH:mm") : "--:--"}</span>
             <span className="hidden md:inline text-muted-foreground" suppressHydrationWarning>
               {now ? format(now, "EEEE, dd MMM", { locale: ptBR }) : ""}
             </span>
-            <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
+            <span className="hidden sm:inline h-1.5 w-1.5 rounded-full bg-accent animate-pulse-dot" />
             <BackupTools
               tasks={tasks}
               events={events}
