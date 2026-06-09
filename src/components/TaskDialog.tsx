@@ -174,7 +174,7 @@ export const TaskDialog = ({
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[min(680px,94vw)] max-h-[92vh] overflow-y-auto bg-surface-1 border hairline shadow-lift"
           >
             {/* Header */}
-            <div className="relative border-b hairline px-8 py-6 bg-gradient-ink">
+            <div className="relative border-b hairline px-5 sm:px-8 py-5 sm:py-6 bg-gradient-ink">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-accent">
