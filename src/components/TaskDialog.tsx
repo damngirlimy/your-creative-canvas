@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Plus, Calendar as CalendarIcon, Clock, Repeat, Flag, Tag, Trash2 } from "lucide-react";
+import { X, Plus, Calendar as CalendarIcon, Clock, Repeat, Flag, Tag, Trash2, ListChecks, Hash } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CategoryDef, Priority, Task, PRIORITY_META, PALETTE_HUES } from "@/lib/types";
+import { CategoryDef, Priority, Task, Subtask, PRIORITY_META, PALETTE_HUES } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface Props {
