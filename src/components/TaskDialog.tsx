@@ -66,6 +66,8 @@ export const TaskDialog = ({
         setEndHour(null); setEndMinute(0);
       }
       setRecurring(editing.recurring ?? "none");
+      setTags(editing.tags ?? []);
+      setSubtasks(editing.subtasks ?? []);
     } else {
       setTitle("");
       setNotes("");
@@ -85,7 +87,10 @@ export const TaskDialog = ({
         setEndHour(null); setEndMinute(0);
       }
       setRecurring("none");
+      setTags([]);
+      setSubtasks([]);
     }
+    setTagInput(""); setSubInput("");
     setShowCatCreator(false);
   }, [editing, defaultDate, open, categories, prefill]);
 
