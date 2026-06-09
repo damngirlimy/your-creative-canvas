@@ -462,7 +462,69 @@ export const TaskDialog = ({
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Tags */}
+              <div>
+                <Label icon={<Hash className="h-3 w-3" />}>Tags</Label>
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {tags.map((t) => (
+                    <span key={t} className="font-mono text-[10px] uppercase tracking-widest px-2 py-1 bg-foreground/10 flex items-center gap-1.5">
+                      #{t}
+                      <button type="button" onClick={() => removeTag(t)} className="text-muted-foreground hover:text-destructive">
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                  <input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(); }
+                      if (e.key === "Backspace" && !tagInput && tags.length) removeTag(tags[tags.length - 1]);
+                    }}
+                    placeholder="adicionar tag…"
+                    className="flex-1 min-w-[120px] bg-transparent border-b hairline pb-1 font-mono text-xs focus:outline-none focus:border-accent"
+                  />
+                </div>
+              </div>
+
+              {/* Subtasks */}
+              <div>
+                <Label icon={<ListChecks className="h-3 w-3" />}>Subtarefas</Label>
+                <div className="mt-2 space-y-2">
+                  {subtasks.map((s) => (
+                    <div key={s.id} className="flex items-center gap-3 group/sub">
+                      <button
+                        type="button"
+                        onClick={() => toggleSub(s.id)}
+                        className={cn(
+                          "h-4 w-4 shrink-0 border flex items-center justify-center transition-smooth",
+                          s.done ? "bg-accent border-accent" : "border-foreground/30 hover:border-accent"
+                        )}
+                      >
+                        {s.done && <span className="text-accent-foreground text-[10px] leading-none">✓</span>}
+                      </button>
+                      <span className={cn("text-sm flex-1", s.done && "line-through text-muted-foreground")}>{s.text}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSub(s.id)}
+                        className="opacity-0 group-hover/sub:opacity-100 text-muted-foreground hover:text-destructive"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                  <div className="flex items-center gap-2">
+                    <Plus className="h-3.5 w-3.5 text-muted-foreground" />
+                    <input
+                      value={subInput}
+                      onChange={(e) => setSubInput(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSub(); } }}
+                      placeholder="Adicionar passo…"
+                      className="flex-1 bg-transparent border-b hairline pb-1 text-sm focus:outline-none focus:border-accent"
+                    />
+                  </div>
+                </div>
+              </div>
               <div>
                 <Label>Notas</Label>
                 <textarea
